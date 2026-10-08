@@ -1,0 +1,37 @@
+{
+  "name": "出門帶了嗎・測試版",
+  "identifier": "dev.personal.BringAlong.source",
+  "sourceURL": "https://github.com/a78788878/bringalong-downloads/releases/latest/download/altstore-source.json",
+  "website": "https://github.com/a78788878/bringalong-downloads",
+  "tintColor": "#286449",
+  "apps": [
+    {
+      "name": "出門帶了嗎",
+      "bundleIdentifier": "dev.personal.BringAlong",
+      "developerName": "BringAlong",
+      "subtitle": "出門前，安心確認一下。",
+      "localizedDescription": "自己的物品清單、固定時間與離開地點提醒。資料儲存在手機。地點提醒可能有系統延遲，仍需實機測試。",
+      "iconURL": "https://github.com/a78788878/bringalong-downloads/releases/download/v0.2.0-1/AppIcon.png",
+      "tintColor": "#286449",
+      "versions": [
+        {
+          "version": "0.2.0",
+          "buildVersion": "1",
+          "date": "2026-10-08",
+          "localizedDescription": "繁體中文清單、定時及背景離開提醒。請更新後重新測試通知與地點監控。",
+          "downloadURL": "https://github.com/a78788878/bringalong-downloads/releases/download/v0.2.0-1/BringAlong.ipa",
+          "size": 306461,
+          "minOSVersion": "17.0"
+        }
+      ],
+      "appPermissions": {
+        "entitlements": [],
+        "privacy": {
+          "NSLocationAlwaysAndWhenInUseUsageDescription": "即使沒有開啟 App，也能在離開你設定的地點時提醒檢查物品。地點資料只儲存在這台裝置上。",
+          "NSLocationWhenInUseUsageDescription": "用你目前的位置設定家、公司或其他提醒地點，方便在離開時檢查隨身物品。"
+        }
+      }
+    }
+  ],
+  "news": []
+}

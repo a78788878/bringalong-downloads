@@ -1,0 +1,71 @@
+name: Publish verified installation files
+on:
+  push:
+    branches: [main]
+    paths: ['package/**', '.github/workflows/publish.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: bringalong-download-release
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Check package identity, permissions and checksums
+        id: package
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, plistlib, re, zipfile
+          root = pathlib.Path('package')
+          expected = {'BringAlong.ipa', 'AppIcon.png', 'altstore-source.json', 'SHA256SUMS.txt', 'INSTALL.md'}
+          assert {p.name for p in root.iterdir()} == expected, 'Unexpected public file list'
+          for line in (root / 'SHA256SUMS.txt').read_text().splitlines():
+              digest, name = line.split('  ', 1)
+              assert name in expected and re.fullmatch('[0-9a-f]{64}', digest)
+              assert hashlib.sha256((root / name).read_bytes()).hexdigest() == digest, 'Checksum mismatch'
+          source = json.loads((root / 'altstore-source.json').read_text())
+          assert len(source['apps']) == 1
+          app = source['apps'][0]
+          with zipfile.ZipFile(root / 'BringAlong.ipa') as ipa:
+              assert ipa.testzip() is None
+              assert not any(n.endswith('embedded.mobileprovision') or '_CodeSignature/' in n for n in ipa.namelist()), 'Signed package rejected'
+              info = plistlib.loads(ipa.read('Payload/BringAlong.app/Info.plist'))
+          assert info['CFBundleIdentifier'] == app['bundleIdentifier'] == 'dev.personal.BringAlong'
+          version = app['versions'][0]
+          assert version['version'] == info['CFBundleShortVersionString']
+          assert version['buildVersion'] == info['CFBundleVersion']
+          assert version['minOSVersion'] == info['MinimumOSVersion']
+          assert version['size'] == (root / 'BringAlong.ipa').stat().st_size
+          privacy = {k: v for k, v in info.items() if 'UsageDescription' in k}
+          assert app['appPermissions'] == {'entitlements': [], 'privacy': privacy}
+          tag = 'v' + version['version'] + '-' + version['buildVersion']
+          assert re.fullmatch(r'v\d+(?:\.\d+)*-\d+(?:\.\d+)*', tag)
+          home = 'https://github.com/a78788878/bringalong-downloads'
+          assert version['downloadURL'] == home + '/releases/download/' + tag + '/BringAlong.ipa'
+          assert app['iconURL'] == home + '/releases/download/' + tag + '/AppIcon.png'
+          assert source['sourceURL'] == home + '/releases/latest/download/altstore-source.json'
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('tag=' + tag + '\n')
+          print('PASS public allowlist, hash, IPA version and AltStore source permissions')
+          PY
+      - name: Publish new immutable version and update latest links
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.package.outputs.tag }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo 'This version already exists. Increment the app version/build; do not overwrite an existing release.' >&2
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --latest \
+            --title "出門帶了嗎 ${RELEASE_TAG}・AltStore 測試版" \
+            --notes-file package/INSTALL.md \
+            package/BringAlong.ipa package/AppIcon.png package/altstore-source.json \
+            package/SHA256SUMS.txt package/INSTALL.md
+          echo 'Published verified unsigned IPA and AltStore source. iPhone installation/updates require AltStore signing.' >> "$GITHUB_STEP_SUMMARY"
