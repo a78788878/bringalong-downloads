@@ -60,8 +60,20 @@ jobs:
           RELEASE_TAG: ${{ steps.package.outputs.tag }}
         run: |
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            echo 'This version already exists. Increment the app version/build; do not overwrite an existing release.' >&2
-            exit 1
+            # Correct installation guidance only; versioned IPA/source/icon remain immutable.
+            verified="$(mktemp -d)"
+            gh release download "$RELEASE_TAG" --dir "$verified" \
+              --pattern BringAlong.ipa --pattern AppIcon.png --pattern altstore-source.json
+            for name in BringAlong.ipa AppIcon.png altstore-source.json; do
+              if ! cmp -s "package/$name" "$verified/$name"; then
+                echo 'Versioned app files changed. Increment version/build; existing app assets will not be overwritten.' >&2
+                exit 1
+              fi
+            done
+            gh release edit "$RELEASE_TAG" --notes-file package/INSTALL.md
+            gh release upload "$RELEASE_TAG" package/INSTALL.md --clobber
+            echo 'Updated installation guidance; verified IPA, source and icon unchanged.' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
           gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --latest \
             --title "出門帶了嗎 ${RELEASE_TAG}・AltStore 測試版" \
