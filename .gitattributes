@@ -1,0 +1,3 @@
+# Preserve exact release bytes, including generated JSON/checksum line endings.
+package/** -text
+*.yml text eol=lf

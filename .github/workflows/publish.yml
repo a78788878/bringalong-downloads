@@ -2,7 +2,7 @@ name: Publish verified installation files
 on:
   push:
     branches: [main]
-    paths: ['package/**', '.github/workflows/publish.yml']
+    paths: ['package/**', '.github/workflows/publish.yml', '.gitattributes']
   workflow_dispatch:
 permissions:
   contents: write
@@ -28,7 +28,7 @@ jobs:
           for line in (root / 'SHA256SUMS.txt').read_text().splitlines():
               digest, name = line.split('  ', 1)
               assert name in expected and re.fullmatch('[0-9a-f]{64}', digest)
-              assert hashlib.sha256((root / name).read_bytes()).hexdigest() == digest, 'Checksum mismatch'
+              assert hashlib.sha256((root / name).read_bytes()).hexdigest() == digest, 'Checksum mismatch: ' + name
           source = json.loads((root / 'altstore-source.json').read_text())
           assert len(source['apps']) == 1
           app = source['apps'][0]
