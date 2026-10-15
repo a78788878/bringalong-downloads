@@ -1,3 +1,17 @@
+# 出門帶了嗎
+
+朋友測試版正在準備 Apple TestFlight 外部審查，**目前尚未開放朋友下載連結**。正式開放後將在這裡提供 TestFlight 邀請；朋友不需要電腦、開發者帳號或開發者模式。
+
+- [朋友測試與問題回報指引](FRIENDS-TESTING.md)
+- [資料與隱私說明](PRIVACY.md)
+
+已確認本人鎖屏通知正常：靜音時有通知，開啟聲音後有音效。離開約 200 公尺的定位提醒尚待實走驗證，將由朋友協助測試與改善。
+
+下方 IPA 為舊的 AltStore 安裝方式，不能當作 TestFlight 邀請使用。
+
+<details>
+<summary>舊版 AltStore 下載與更新說明</summary>
+
 # 出門帶了嗎 0.2.0（1）
 
 [下載最新 IPA](https://github.com/a78788878/bringalong-downloads/releases/latest/download/BringAlong.ipa) · [所有版本](https://github.com/a78788878/bringalong-downloads/releases)
@@ -37,3 +51,5 @@ AltStore 2.3 的 Remote AltServer 可減少接電腦，但不取消開發者模�
 本安裝檔未簽署，需 AltStore；手機無法只靠 Safari 直接完成安裝。原本已安裝 AltStore 的使用者可直接照上面操作。後續 TestFlight 發佈完成後，改由 TestFlight 的「自動更新」處理。
 
 此下載區只有 App 安裝檔、圖示及更新資訊；App 不會把你的清單或住家位置放進安裝檔。安裝包未經 Apple 外部測試審查，提醒可靠度不保證即時，尤其不要強制關閉 App。
+
+</details>
